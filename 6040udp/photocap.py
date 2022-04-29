@@ -13,7 +13,7 @@ import signal
 from pathlib import Path
 import struct
 
-import HTPA32x32d.communication
+import HTPAcommunication
 
 
 def query_yes_no(question, default="yes"):
@@ -52,14 +52,14 @@ def query_yes_no(question, default="yes"):
 
 
 def main():
-    signal.signal(signal.SIGTERM, HTPA32x32d.communication.service_shutdown)
-    signal.signal(signal.SIGINT, HTPA32x32d.communication.service_shutdown)
+    signal.signal(signal.SIGTERM, HTPAcommunication.service_shutdown)
+    signal.signal(signal.SIGINT, HTPAcommunication.service_shutdown)
     print('Starting main program')
-    ips = HTPA32x32d.communication.loadIPList()
+    ips = HTPAcommunication.loadIPList()
     if not len(ips):
-        sys.exit("Add devices to the file manually, file path: {}".format(HTPA32x32d.communication.IP_LIST_FP))
+        sys.exit("Add devices to the file manually, file path: {}".format(HTPAcommunication.IP_LIST_FP))
     for ip in ips:
-        if not HTPA32x32d.communication.validateIP(ip):
+        if not HTPAcommunication.validateIP(ip):
             sys.exit("IP %s is not a valid IP adress" % ip)
 
     if len(ips):
@@ -73,7 +73,7 @@ def main():
     if proceed:
         devices = []
         for ip in ips:
-            devices.append(HTPA32x32d.communication.Device(ip))
+            devices.append(HTPAcommunication.Device(ip))
         # dir and fn
         directory_path = global_T0_YYYYMMDD
         Path(directory_path).mkdir(parents=True, exist_ok=True)
@@ -82,13 +82,13 @@ def main():
             fn = "{}_ID{}.TXT".format(
                 global_T0_YYYYMMDD_HHMM, device.ip.split(".")[-1])
             fp = os.path.join(directory_path, fn)
-            caps.append(HTPA32x32d.communication.Cap(device, fp, global_T0))
+            caps.append(HTPAcommunication.Cap(device, fp, global_T0))
         try:
             for cap in caps:
                 cap.start()
             while True:
                 time.sleep(0.5)
-        except HTPA32x32d.communication.ServiceExit:
+        except HTPAcommunication.ServiceExit:
             for cap in caps:
                 cap.shutdown_flag.set()
 
