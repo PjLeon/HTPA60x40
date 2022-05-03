@@ -6,7 +6,7 @@ import struct
 call_msg = "Calling HTPA series devices"
 bind_msg = "Bind HTPA series device"
 release_msg = "x Release HTPA series device"
-framereq_msg = "K"
+framereq_msg = "k"
 
 cwd = os.getcwd()
 output = os.path.join(cwd, 'output.txt') 

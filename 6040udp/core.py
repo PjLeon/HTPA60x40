@@ -5,7 +5,6 @@ Supports recording mutliple sensors at the same time. This tool is supposed to h
 import socket
 import os
 import sys
-print(sys.path)
 import threading  # http://www.g-loaded.eu/2016/11/24/how-to-terminate-running-python-threads-using-signals/
 import time
 import datetime
@@ -13,7 +12,8 @@ import signal
 from pathlib import Path
 import struct
 
-import HTPAcommunication
+import HTPAinterface
+import IMGinterface
 
 
 def query_yes_no(question, default="yes"):
