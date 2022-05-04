@@ -10,7 +10,7 @@ import numpy
 from itertools import chain
 from pathlib import Path
 import struct
-# import cv2
+import cv2
 
 
 IP = '169.254.000.201'
@@ -57,6 +57,8 @@ def bind_HTPA():
 def frame_builder(pixels):
     line = numpy.array(pixels)
     frame = line.reshape(40,60)
+    frame_scaled = f
+    frame = (frame - 2731)/10 #convert to Celcius
     return frame
 
 def release_HTPA():
@@ -92,14 +94,13 @@ def stream_HTPA(n):
         elif len(packet) == PACKET5_LEN:
             container = struct.unpack('<B578h', packet)
             pixel_line = list(chain(pixel_line, container[1:85]))
-            #print(len(pixel_line))
-            print(frame_builder(pixel_line))
+            cv2.imshow(frame_builder(pixel_line))
             pixel_line = []
             #with open(output, 'a') as file:
             #    file.write('{} \n'.format(container))
             n += 1
         else:
-            print('weird packet of length {} \n it says {}'.format(len(packet), packet))
+            print('weird packet of length: {} \n it says: {}'.format(len(packet), packet))
             #print(len(packet))
             #continue
         print('n = {}'.format(n))
