@@ -57,9 +57,10 @@ def bind_HTPA():
 def frame_builder(pixels):
     line = numpy.array(pixels)
     frame = line.reshape(40,60)
-    frame_scaled = f
-    frame = (frame - 2731)/10 #convert to Celcius
-    return frame
+    #frame_scaled = frame * 255.0/frame.max()
+    #frame = (frame - 2731)/10 #convert to Celcius
+    frame_scaled = (255*(frame - numpy.min(frame))/numpy.ptp(frame)).astype('uint8')
+    return frame_scaled
 
 def release_HTPA():
     sock.sendto(release_msg.encode(), (IP,PORT))
@@ -94,7 +95,8 @@ def stream_HTPA(n):
         elif len(packet) == PACKET5_LEN:
             container = struct.unpack('<B578h', packet)
             pixel_line = list(chain(pixel_line, container[1:85]))
-            cv2.imshow(frame_builder(pixel_line))
+            cv2.imshow('iseethis',frame_builder(pixel_line))
+            cv2.waitKey(5)
             pixel_line = []
             #with open(output, 'a') as file:
             #    file.write('{} \n'.format(container))
