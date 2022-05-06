@@ -8,12 +8,15 @@ import sys
 #import threading  # http://www.g-loaded.eu/2016/11/24/how-to-terminate-running-python-threads-using-signals/
 import time
 #import datetime
-#import signal
+import signal
 from pathlib import Path
 import struct
 
+import g
 import HTPAinterface
-#import IMGinterface
+import IMGinterface
+
+
 
 '''
 def query_yes_no(question, default="yes"):
@@ -51,12 +54,46 @@ def query_yes_no(question, default="yes"):
                              "(or 'y' or 'n').\n")
 '''
 
+def terminate(signum, frame):
+    #global terminate_flag
+    g.terminate_flag = True
+    print('caught {}'.format(signum))
+    #raise SystemExit('I just sudokud myself')
+
+def fps():
+    global ticker 
+    global start_t
+    fps = ticker / (time.time() - start_t)
+    print('FPS = {}'.format(fps))
+    
+    '''
 def main():
-    print('Starting main program')
+    print('Starting main loop')
     HTPAinterface.call_HTPA()
     HTPAinterface.bind_HTPA()
+    while 
     HTPAinterface.stream_HTPA(0)
-    
+'''
+
+def main():
+    print('Starting main')
+    g.init()
+    signal.signal(signal.SIGTERM, terminate)
+    signal.signal(signal.SIGINT, terminate)
+    print('Entering main hyperloop')
+    print('pid: {}'.format(os.getpid()))
+    start_t = time.time()
+    fps_interval = 1 #seconds between avg fps calculations
+    ticker = 0
+    while not g.terminate_flag:
+        IMGinterface.run_loop(g.pixel_line)
+        print('terminate_flag = {}'.format(g.terminate_flag))
+        print('test g.var change, output = {}'.format(g.pixel_line))
+        if (time.time() - start_t ) > fps_interval:
+            fps()
+            
+
+        
 
 if __name__ == "__main__":
     main()

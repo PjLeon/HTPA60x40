@@ -12,6 +12,8 @@ from pathlib import Path
 import struct
 import cv2
 
+import g
+
 
 IP = '169.254.000.201'
 PORT = 30444
@@ -52,7 +54,7 @@ def bind_HTPA():
         #print("Bound to HTPA %s" % IP)
     except socket.timeout:
         sock.close()
-        print("Failed to bind HTPA %s while initializing" % self.device.ip)
+        print("Failed to bind HTPA %s while initializing" % IP)
 
 def frame_builder(pixels):
     line = numpy.array(pixels)
@@ -95,7 +97,8 @@ def stream_HTPA(n):
         elif len(packet) == PACKET5_LEN:
             container = struct.unpack('<B578h', packet)
             pixel_line = list(chain(pixel_line, container[1:85]))
-            cv2.imshow('iseethis',frame_builder(pixel_line))
+            cv2.imshow('iseethis', cv2.resize(frame_builder(pixel_line),(360,240)))
+            #cv2.imshow('iseethis', frame_builder(pixel_line))
             cv2.waitKey(5)
             pixel_line = []
             #with open(output, 'a') as file:
@@ -105,7 +108,7 @@ def stream_HTPA(n):
             print('weird packet of length: {} \n it says: {}'.format(len(packet), packet))
             #print(len(packet))
             #continue
-        print('n = {}'.format(n))
+        #print('n = {}'.format(n))
 
 
 
