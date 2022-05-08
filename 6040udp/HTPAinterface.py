@@ -37,7 +37,7 @@ sock.settimeout(2)
 sock.bind(('0.0.0.0', PORT))  # works with PORT = 0 ? Heimann UDP.pdf says to set receiving port to 30444 as well
 print(sock)
 
-def call_HTPA():
+def call():
     try:
         sock.sendto(call_msg.encode(), (IP,PORT))
         print(sock.recv(BUFF_SIZE))
@@ -47,7 +47,7 @@ def call_HTPA():
         print("Can't connect to HTPA %s while initializing" % IP)
        
         
-def bind_HTPA():
+def bind():
     try:
         sock.sendto(bind_msg.encode(), (IP, PORT))
         print(sock.recv(BUFF_SIZE))
@@ -56,21 +56,38 @@ def bind_HTPA():
         sock.close()
         print("Failed to bind HTPA %s while initializing" % IP)
 
-def frame_builder(pixels):
-    line = numpy.array(pixels)
-    frame = line.reshape(40,60)
-    #frame_scaled = frame * 255.0/frame.max()
-    #frame = (frame - 2731)/10 #convert to Celcius
-    frame_scaled = (255*(frame - numpy.min(frame))/numpy.ptp(frame)).astype('uint8')
-    return frame_scaled
 
-def release_HTPA():
+def release():
     sock.sendto(release_msg.encode(), (IP,PORT))
     print(sock.recv(BUFF_SIZE))
     print("Terminated HTPA {}".format(self.device.ip))
-    
 
-def stream_HTPA(n):
+def receive():
+    pixel_line = []
+    while len(pixel_line) < 2400:
+        packet = sock.recv(BUFF_SIZE)
+        #print(len(packet))
+        if len(packet) == PACKET14_LEN:
+            container = struct.unpack('<B579h', packet)
+            #with open(output, 'a') as file:
+            #    file.write('{} \n'.format(container))
+            pixel_line = list(chain(pixel_line, container[1:]))
+            #n += 1
+        elif len(packet) == PACKET5_LEN:
+            container = struct.unpack('<B578h', packet)
+            pixel_line = list(chain(pixel_line, container[1:85]))
+            temp_array = numpy.array(pixel_line).reshape(40,60)
+            return temp_array
+            #with open(output, 'a') as file:
+            #    file.write('{} \n'.format(container))
+            #n += 1
+        else:
+            print('weird packet of length: {} \n it says: {}'.format(len(packet), packet))
+            #print(len(packet))
+            #continue
+        #print('n = {}'.format(n))
+
+def stream():
     try:
         sock.sendto(framereq_msg.encode(), (IP, PORT))
         print("Streaming HTPA %s" % IP)
@@ -84,31 +101,6 @@ def stream_HTPA(n):
         #    header2write = str(header).rstrip('\n')+('\n')
        # with open(self.fp, 'w') as file:
        #     file.write(header2write)
-    pixel_line = []
-    while True:
-        packet = sock.recv(BUFF_SIZE)
-        #print(len(packet))
-        if len(packet) == PACKET14_LEN:
-            container = struct.unpack('<B579h', packet)
-            #with open(output, 'a') as file:
-            #    file.write('{} \n'.format(container))
-            pixel_line = list(chain(pixel_line, container[1:]))
-            n += 1
-        elif len(packet) == PACKET5_LEN:
-            container = struct.unpack('<B578h', packet)
-            pixel_line = list(chain(pixel_line, container[1:85]))
-            cv2.imshow('iseethis', cv2.resize(frame_builder(pixel_line),(360,240)))
-            #cv2.imshow('iseethis', frame_builder(pixel_line))
-            cv2.waitKey(5)
-            pixel_line = []
-            #with open(output, 'a') as file:
-            #    file.write('{} \n'.format(container))
-            n += 1
-        else:
-            print('weird packet of length: {} \n it says: {}'.format(len(packet), packet))
-            #print(len(packet))
-            #continue
-        #print('n = {}'.format(n))
 
 
 

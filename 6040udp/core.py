@@ -60,9 +60,7 @@ def terminate(signum, frame):
     print('caught {}'.format(signum))
     #raise SystemExit('I just sudokud myself')
 
-def fps():
-    global ticker 
-    global start_t
+def fps(ticker, start_t):
     fps = ticker / (time.time() - start_t)
     print('FPS = {}'.format(fps))
     
@@ -80,17 +78,26 @@ def main():
     g.init()
     signal.signal(signal.SIGTERM, terminate)
     signal.signal(signal.SIGINT, terminate)
+    HTPAinterface.call()
+    HTPAinterface.bind()
+    HTPAinterface.stream()
     print('Entering main hyperloop')
     print('pid: {}'.format(os.getpid()))
     start_t = time.time()
-    fps_interval = 1 #seconds between avg fps calculations
+    fps_interval = 0.5 #seconds between avg fps calculations
     ticker = 0
     while not g.terminate_flag:
-        IMGinterface.run_loop(g.pixel_line)
-        print('terminate_flag = {}'.format(g.terminate_flag))
-        print('test g.var change, output = {}'.format(g.pixel_line))
+        ticker += 1
+        temp_array = HTPAinterface.receive()
+        IMGinterface.output_stream(temp_array)
+        
+        #IMGinterface.run_loop(g.pixel_line)
+        #print('test g.var change, output = {}'.format(g.pixel_line))
         if (time.time() - start_t ) > fps_interval:
-            fps()
+            fps(ticker, start_t)
+            ticker = 0
+            start_t = time.time()
+            
             
 
         
