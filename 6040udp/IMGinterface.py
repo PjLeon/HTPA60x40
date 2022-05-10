@@ -21,10 +21,12 @@ def frame_builder(pixel_line):
 '''
 def output_stream(frame):
     #print(frame)
-    frame_scaled = (255*(frame - numpy.min(frame))/numpy.ptp(frame)).astype('uint8')
-    #ret, thresh = cv2.threshold(frame_scaled,0,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
-    frame_flip = cv2.flip(frame_scaled, 0)
-    cv2.imshow('iseethis', cv2.resize(frame_flip,(360,240)))
+    frame_gray = (255*(frame - numpy.min(frame))/numpy.ptp(frame)).astype('uint8')
+    frame_gray = cv2.flip(frame_gray, 0)
+    ret, thresh = cv2.threshold(frame_gray,250,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    cv2.drawContours(frame_gray, contours, -1, (0, 0, 0), 1, cv2.LINE_AA)
+    cv2.imshow('iseethis', cv2.resize(frame_gray,(360,240)))
     cv2.waitKey(10)
     #return frame_scaled
     
