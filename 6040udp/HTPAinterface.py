@@ -21,7 +21,7 @@ BUFF_SIZE = 1300
 
 call_msg = "Calling HTPA series devices"
 bind_msg = "Bind HTPA series device"
-release_msg = "x Release HTPA series device"
+release_msg = "X" #"x Release HTPA series device"
 framereq_msg = "K" #K stream k frame
 
 PACKET14_LEN = 1159
@@ -60,7 +60,7 @@ def bind():
 def release():
     sock.sendto(release_msg.encode(), (IP,PORT))
     print(sock.recv(BUFF_SIZE))
-    print("Terminated HTPA {}".format(self.device.ip))
+    print("Terminated HTPA {}".format(IP))
 
 def receive():
     pixel_line = []

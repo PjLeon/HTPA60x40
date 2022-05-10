@@ -57,6 +57,7 @@ def query_yes_no(question, default="yes"):
 def terminate(signum, frame):
     #global terminate_flag
     g.terminate_flag = True
+    HTPAinterface.release()
     print('caught {}'.format(signum))
     #raise SystemExit('I just sudokud myself')
 

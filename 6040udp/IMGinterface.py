@@ -22,8 +22,9 @@ def frame_builder(pixel_line):
 def output_stream(frame):
     #print(frame)
     frame_scaled = (255*(frame - numpy.min(frame))/numpy.ptp(frame)).astype('uint8')
-    ret, thresh = cv2.threshold(frame_scaled,0,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
-    cv2.imshow('iseethis', cv2.resize(thresh,(360,240)))
+    #ret, thresh = cv2.threshold(frame_scaled,0,255,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+    frame_flip = cv2.flip(frame_scaled, 0)
+    cv2.imshow('iseethis', cv2.resize(frame_flip,(360,240)))
     cv2.waitKey(10)
     #return frame_scaled
     
