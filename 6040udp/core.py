@@ -85,7 +85,7 @@ def main():
     print('Entering main hyperloop')
     print('pid: {}'.format(os.getpid()))
     start_t = time.time()
-    fps_interval = 0.5 #seconds between avg fps calculations
+    fps_interval = 5 #seconds between avg fps calculations
     ticker = 0
     while not g.terminate_flag:
         ticker += 1
