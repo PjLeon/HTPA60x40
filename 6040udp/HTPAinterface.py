@@ -11,6 +11,7 @@ from itertools import chain
 from pathlib import Path
 import struct
 import cv2
+import pickle
 
 import g
 
@@ -33,7 +34,7 @@ cwd = os.getcwd()
 output = os.path.join(cwd, 'output.txt') 
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.settimeout(2)
+sock.settimeout(6)
 sock.bind(('0.0.0.0', PORT))  # works with PORT = 0 ? Heimann UDP.pdf says to set receiving port to 30444 as well
 print(sock)
 
@@ -81,8 +82,8 @@ def receive():
             #out = out.join(map(str,pixel_line)
             #print(out)
             #out.join(pixel_line)
-            #with open(output, 'a') as file:
-             #   file.write(out)
+            with open('dump.pkl', 'ab') as file:
+                pickle.dump(pixel_line, file)
             return temp_array
             #with open(output, 'a') as file:
             #    file.write('{} \n'.format(container))

@@ -113,3 +113,5 @@ recording/settings/devices.txt
 **/*.log
 
 testing/*.log
+dumps/
+

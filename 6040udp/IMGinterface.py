@@ -13,8 +13,8 @@ Temp range for converting to grayscale output values:
 50 - 100 deg (0 to 255) , corresponds to 
 sensor readings 3230 - 3731 (K*10) 
 '''
-CLIP_LOW = 3230
-CLIP_HIGH = 3731
+CLIP_LOW = 3330
+CLIP_HIGH = 3830
 CLIP_DELTA = CLIP_HIGH - CLIP_LOW
 
 '''
@@ -29,25 +29,29 @@ def frame_builder(pixel_line):
 def output_stream(frame):
     #print(frame)
     frame = cv2.flip(frame, 0)
-    f_clip = cv2.clip(frame, CLIP_LOW, CLIP_HIGH)
+    f_half = frame
+    f_half[20:40,0:60] = 0
+    f_half[6:10,24:35] = 0
+    f_clip = numpy.clip(f_half, CLIP_LOW, CLIP_HIGH)
     f_gray = (255*(f_clip - CLIP_LOW)/CLIP_DELTA).astype('uint8')
-    ret, molten_f = cv2.threshold(frame_gray,254,255,cv2.THRESH_BINARY)
-    ret, solid_f = cv2.threshold(frame_gray,0,255,cv2.THRESH_BINARY) 
+    ret, molten_f = cv2.threshold(f_gray,254,255,cv2.THRESH_BINARY)
+    ret, solid_f = cv2.threshold(f_gray,5,255,cv2.THRESH_OTSU) 
     delta_f = solid_f - molten_f
     molten_x, molten_y = numpy.nonzero(molten_f)
-    solid_x, solid_y = numpy.nonzero(delta_f)
+    #solid_x, solid_y = numpy.nonzero(delta_f)
     molten_arr = numpy.transpose(numpy.array([frame[molten_x, molten_y], molten_x, molten_y]))
     #extract values in the same frame column, i.e. having same x value:
     columns = numpy.unique(molten_arr[:,1])
-    for i in columns:
-         
-        molten[molten[:,1]==i]
+    #for i in columns:
+     #   melt_temp_line = molten[molten[:,1]==i]
     
 
     
     #contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     #cv2.drawContours(frame_gray, contours, -1, (255, 230, 255), 1, cv2.LINE_AA)
-    cv2.imshow('iseethis', cv2.resize(f_gray,(360,240)))
+    cv2.imshow('gray_clipped', cv2.resize(f_gray,(360,240)))
+    cv2.imshow('molten_px', cv2.resize(molten_f,(360,240)))
+    cv2.imshow('solid_px', cv2.resize(delta_f,(360,240)))
     cv2.waitKey(10)
     #return frame_scaled
     
