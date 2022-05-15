@@ -78,10 +78,6 @@ def receive():
             container = struct.unpack('<B578h', packet)
             pixel_line = list(chain(pixel_line, container[1:85]))
             temp_array = numpy.array(pixel_line).reshape(40,60)
-            #out = ''
-            #out = out.join(map(str,pixel_line)
-            #print(out)
-            #out.join(pixel_line)
             with open('dump.pkl', 'ab') as file:
                 pickle.dump(pixel_line, file)
             return temp_array
