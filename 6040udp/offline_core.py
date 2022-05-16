@@ -20,7 +20,7 @@ import IMGinterface
 
 cwd = os.getcwd()
 print(cwd)
-dump = os.path.join(cwd, 'dump1.pkl') 
+dump = os.path.join(cwd, 'dump2.pkl') 
 print(dump)
 f = open(dump, 'rb')
 print(dump)
