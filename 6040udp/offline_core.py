@@ -16,50 +16,15 @@ import numpy
 
 import g
 import HTPAinterface
-import IMGinterface
+import IMGinterface2
 
 cwd = os.getcwd()
 print(cwd)
 dump = os.path.join(cwd, 'dump2.pkl') 
-print(dump)
+
 f = open(dump, 'rb')
-print(dump)
 
-'''
-def query_yes_no(question, default="yes"):
-    """Ask a yes/no question via raw_input() and return their answer.
-
-    "question" is a string that is presented to the user.
-    "default" is the presumed answer if the user just hits <Enter>.
-        It must be "yes" (the default), "no" or None (meaning
-        an answer is required of the user).
-
-    The "answer" return value is True for "yes" or False for "no".
-
-    Credit: https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input
-    """
-    valid = {"yes": True, "y": True, "ye": True,
-             "no": False, "n": False}
-    if default is None:
-        prompt = " [y/n] "
-    elif default == "yes":
-        prompt = " [Y/n] "
-    elif default == "no":
-        prompt = " [y/N] "
-    else:
-        raise ValueError("invalid default answer: '%s'" % default)
-
-    while True:
-        sys.stdout.write(question + prompt)
-        choice = input().lower()
-        if default is not None and choice == '':
-            return valid[default]
-        elif choice in valid:
-            return valid[choice]
-        else:
-            sys.stdout.write("Please respond with 'yes' or 'no' "
-                             "(or 'y' or 'n').\n")
-'''
+median = 0
 def unpickler():
     try: 
         pixel_line = pickle.load(f)
@@ -67,7 +32,8 @@ def unpickler():
     except EOFError:
         sys.exit()
     return temp_array
-    
+
+
 def terminate(signum, frame):
     #global terminate_flag
     g.terminate_flag = True
@@ -75,27 +41,18 @@ def terminate(signum, frame):
     print('caught {}'.format(signum))
     #raise SystemExit('I just sudokud myself')
 
+
 def fps(ticker, start_t):
     fps = ticker / (time.time() - start_t)
     print('FPS = {}'.format(fps))
-    
-    '''
-def main():
-    print('Starting main loop')
-    HTPAinterface.call_HTPA()
-    HTPAinterface.bind_HTPA()
-    while 
-    HTPAinterface.stream_HTPA(0)
-'''
+
 
 def main():
     print('Starting main')
+    global median
     g.init()
     signal.signal(signal.SIGTERM, terminate)
     signal.signal(signal.SIGINT, terminate)
-    #HTPAinterface.call()
-    #HTPAinterface.bind()
-    #HTPAinterface.stream()
     print('Entering main hyperloop')
     print('pid: {}'.format(os.getpid()))
     start_t = time.time()
@@ -104,18 +61,16 @@ def main():
     while not g.terminate_flag:
         ticker += 1
         temp_array = unpickler()
-        IMGinterface.output_stream(temp_array)
-        
-        #IMGinterface.run_loop(g.pixel_line)
-        #print('test g.var change, output = {}'.format(g.pixel_line))
+        f_clip = IMGinterface2.clip(temp_array)
+        IMGinterface2.edge(f_clip, True)
+        #IMGinterface2.gradient(f_clip, True)
+        IMGinterface2.threshold(f_clip, True)
         if (time.time() - start_t ) > fps_interval:
             fps(ticker, start_t)
             ticker = 0
             start_t = time.time()
             
-            
 
-        
 
 if __name__ == "__main__":
     main()
