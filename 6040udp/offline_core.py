@@ -63,8 +63,8 @@ def main():
         temp_array = unpickler()
         f_clip = IMGinterface2.clip(temp_array)
         IMGinterface2.edge(f_clip, True)
-        #IMGinterface2.gradient(f_clip, True)
-        IMGinterface2.threshold(f_clip, True)
+        IMGinterface2.gradient(f_clip, True)
+        #IMGinterface2.threshold(f_clip, True)
         if (time.time() - start_t ) > fps_interval:
             fps(ticker, start_t)
             ticker = 0

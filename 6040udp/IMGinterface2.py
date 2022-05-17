@@ -64,18 +64,27 @@ def edge(f_clip, show = False):
 
 
 def gradient(f_clip, show = False):
-    f_gray = gray_f32(f_clip)
+    f_gray = gray_i8(f_clip)
     f_gray = blur(f_gray)
     edge_lap = cv2.Laplacian(f_gray,cv2.CV_32F,ksize = 1)
-    #f_gray_8b = cv2.convertScaleAbs(f_sharp)
+    edge_lap[edge_lap > 0] =255
+    edge_lap[edge_lap <= 0] = 0
+    test = edge_lap.astype('uint8')
+    #edge_lap = cv2.convertScaleAbs(edge_lap)
     
     #sobelx = cv2.Sobel(src=f_gray, ddepth=cv2.CV_64F, dx=1, dy=0, ksize=5) # Sobel Edge Detection on the X axis
     #sobely = cv2.Sobel(src=f_gray, ddepth=cv2.CV_64F, dx=0, dy=1, ksize=5) # Sobel Edge Detection on the Y axis
     sobelxy = cv2.Sobel(src=f_gray, ddepth=cv2.CV_64F, dx=0, dy=1, ksize=1) # Combined X and Y Sobel Edge Detection
-
+    contours, hierarchy = cv2.findContours(test, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+    for n in contours:
+        #print(cv2.contourArea(n))
+        #print(n)
+        #print(cv2.contourArea(n))
+        if cv2.contourArea(n) > 10:
+            cv2.drawContours(f_gray, [n], -1, (125, 125, 225), 1, cv2.LINE_AA)
     if show:
-        cv2.imshow('laplacian', cv2.resize(edge_lap, (360, 240), fx=0, fy=0, interpolation = cv2.INTER_NEAREST))
-        cv2.imshow('sobel', cv2.resize(sobelxy, (360, 240), fx=0, fy=0, interpolation = cv2.INTER_NEAREST))
+        cv2.imshow('laplacian', cv2.resize(f_gray, (360, 240), fx=0, fy=0, interpolation = cv2.INTER_NEAREST))
+        #cv2.imshow('sobel', cv2.resize(sobelxy, (360, 240), fx=0, fy=0, interpolation = cv2.INTER_NEAREST))
         cv2.waitKey(5)
     
 def threshold(f_clip, show = False):
@@ -83,7 +92,7 @@ def threshold(f_clip, show = False):
     
     ret, molten_f = cv2.threshold(f_gray,250,255,cv2.THRESH_BINARY)
     #molten_f = cv2.adaptiveThreshold(f_gray,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY, 3, 2)
-    ret, solid_f = cv2.threshold(f_gray,2,255,cv2.THRESH_OTSU) 
+    ret, solid_f = cv2.threshold(f_gray,2,255,cv2.THRESH_BINARY) 
     #solid_f = cv2.adaptiveThreshold(f_gray,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY, 19, 10) # region size, C threshold adjust value
     delta_f = solid_f - molten_f
     #delta_f = cv2.erode(delta_f, None, 2)
