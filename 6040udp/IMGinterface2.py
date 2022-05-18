@@ -3,6 +3,10 @@ import os
 import cv2
 import time
 
+import matplotlib.pyplot as plt
+
+
+
 import g
 
 '''
@@ -28,7 +32,7 @@ def clip(frame):
     frame = cv2.flip(frame, 0)
     f_half = frame
     f_half[20:40,0:60] = 0
-    #f_half[6:10,24:35] = 0
+    f_half[6:10,24:35] = 0
     f_clip = numpy.clip(f_half, CLIP_LOW, CLIP_HIGH)
 
     return f_clip
@@ -59,8 +63,8 @@ def edge(f_clip, show = False):
     if show:
         cv2.imshow('canny', cv2.resize(edges_c, (360, 240), fx=0, fy=0, interpolation = cv2.INTER_NEAREST))
         cv2.imshow('gray', cv2.resize(f_gray, (360, 240), fx=0, fy=0, interpolation = cv2.INTER_NEAREST))
-        cv2.imshow('eroded', cv2.resize(edges_d, (360, 240), fx=0, fy=0, interpolation = cv2.INTER_NEAREST))
-        cv2.waitKey(5)
+      #  cv2.imshow('eroded', cv2.resize(edges_d, (360, 240), fx=0, fy=0, interpolation = cv2.INTER_NEAREST))
+        cv2.waitKey(15)
 
 
 def gradient(f_clip, show = False):
@@ -70,7 +74,7 @@ def gradient(f_clip, show = False):
     edge_lap[edge_lap > 0] =255
     edge_lap[edge_lap <= 0] = 0
     test = edge_lap.astype('uint8')
-    #edge_lap = cv2.convertScaleAbs(edge_lap)
+    #test = cv2.convertScaleAbs(edge_lap)
     
     #sobelx = cv2.Sobel(src=f_gray, ddepth=cv2.CV_64F, dx=1, dy=0, ksize=5) # Sobel Edge Detection on the X axis
     #sobely = cv2.Sobel(src=f_gray, ddepth=cv2.CV_64F, dx=0, dy=1, ksize=5) # Sobel Edge Detection on the Y axis
@@ -85,28 +89,54 @@ def gradient(f_clip, show = False):
     if show:
         cv2.imshow('laplacian', cv2.resize(f_gray, (360, 240), fx=0, fy=0, interpolation = cv2.INTER_NEAREST))
         #cv2.imshow('sobel', cv2.resize(sobelxy, (360, 240), fx=0, fy=0, interpolation = cv2.INTER_NEAREST))
-        cv2.waitKey(5)
+        cv2.waitKey(15)
     
-def threshold(f_clip, show = False):
+def threshold(f_clip, temp_array, show = False):
     f_gray = gray_i8(f_clip)
-    
+    temp_array =  cv2.flip(temp_array, 0)
     ret, molten_f = cv2.threshold(f_gray,250,255,cv2.THRESH_BINARY)
     #molten_f = cv2.adaptiveThreshold(f_gray,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY, 3, 2)
-    ret, solid_f = cv2.threshold(f_gray,2,255,cv2.THRESH_BINARY) 
+    ret, solid_f = cv2.threshold(f_gray,2,255,cv2.THRESH_OTSU) 
     #solid_f = cv2.adaptiveThreshold(f_gray,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY, 19, 10) # region size, C threshold adjust value
     delta_f = solid_f - molten_f
     #delta_f = cv2.erode(delta_f, None, 2)
-    molten_x, molten_y = numpy.nonzero(molten_f)
+    molten_y, molten_x = numpy.nonzero(molten_f)
     #solid_x, solid_y = numpy.nonzero(delta_f)
-    molten_arr = numpy.transpose(numpy.array([f_clip[molten_x, molten_y], molten_x, molten_y]))
+
+    molten_arr = numpy.transpose(numpy.array([temp_array[molten_y, molten_x], molten_y, molten_x]))
+    #print(molten_arr)
     #extract values in the same frame column, i.e. having same x value:
-    columns = numpy.unique(molten_arr[:,1])
-    #for i in columns:
-     #   melt_temp_line = molten[molten[:,1]==i]
+    columns = numpy.unique(molten_arr[:,2]) #unique values of x in a vector, arranged smallest to largest
+    #print(columns)
+    melt_temp_line = []
+    #print(molten_arr)
+    for i in columns:
+        #print(i)
+        t = numpy.mean(molten_arr[molten_arr[:,2]==i], axis=0)
+        melt_temp_line.append(t[0])
+
+    delta_t = (max(melt_temp_line)-min(melt_temp_line))/10
+    observed_length = '{},{}'.format(len(melt_temp_line),delta_t)
+    cv2.putText(molten_f, observed_length, (2, 39), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255,255,255))
     if show:
+        #print(melt_temp_line)
+        draw_cooling(numpy.diff(melt_temp_line))
         cv2.imshow('molten_px', cv2.resize(molten_f,(360,240), fx=0, fy=0, interpolation = cv2.INTER_NEAREST))
         cv2.imshow('solid_px', cv2.resize(delta_f,(360,240), fx=0, fy=0, interpolation = cv2.INTER_NEAREST))
-        cv2.waitKey(5)
+        cv2.waitKey(15)
+        
+#def melt_temp():
+    
+def draw_cooling(ydata):
+    xdata = []
+    for i in range(len(ydata)):
+        xdata.append(i)
+    #plt.cla()
+    plt.ion()
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    line1, = ax.plot(xdata,ydata, 'b-')
+    plt.clf()
 
     
 def gray_f32(f_clip):
